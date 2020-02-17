@@ -16,7 +16,8 @@ import { LyricsetModule } from './lyricset/lyricset.module';
     MongooseModule.forRoot(ConfigurationService.connectionString), 
     UserModule,
     LyricsetModule,
-    LyricsetModule],
+    LyricsetModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

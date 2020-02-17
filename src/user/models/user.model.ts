@@ -9,8 +9,12 @@ export class User extends BaseModel<User>{
   password: string;
   @prop({enum: UserRole, default: UserRole.User})
   role?: UserRole;
-  @prop()
+  @prop({required: [true, 'Email is required']})
   email: string;
+  @prop({default: []})
+  setlist: string[];
+
+
 
 
   static get model() : ModelType<User>{

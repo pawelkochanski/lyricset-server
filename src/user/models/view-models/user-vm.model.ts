@@ -13,4 +13,6 @@ export class UserVm extends BaseModelVm{
   email: string;
   @ApiModelPropertyOptional({enum: EnumToArray(UserRole)})
   role?: UserRole
+  @ApiModelPropertyOptional()
+  setlist: string[];
 }

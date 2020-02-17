@@ -1,5 +1,5 @@
-import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, HttpException, HttpStatus, Post, Get, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { User} from './models/user.model';
 import { UserService } from './user.service';
 import { RegisterVm } from './models/view-models/register-vm.model';
@@ -8,6 +8,10 @@ import { ApiException } from '../shared/api-exception.model';
 import { GetOperationId } from '../shared/utilities/get-operation-id';
 import { LoginResponseVm } from './models/view-models/login-response-vm';
 import { LoginVm } from './models/view-models/login-vm.model';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/shared/decorators/roles.decorator';
+import { RolesGuard } from 'src/shared/guards/roles.guard';
+import { UserRole } from './models/user-role.enum';
 
 @Controller('users')
 @ApiTags(User.modelName)
@@ -15,8 +19,8 @@ export class UserController {
   constructor(private readonly _userService: UserService) {
   }
   @Post('register')
-  @ApiResponse({status: HttpStatus.CREATED, type: UserVm})
-  @ApiResponse({status: HttpStatus.BAD_REQUEST, type: ApiException})
+  @ApiCreatedResponse({type: LoginResponseVm})
+  @ApiBadRequestResponse({type: ApiException})
   @ApiOperation(GetOperationId(User.modelName, 'Register'))
   async register(@Body() registerVm: RegisterVm): Promise<UserVm>{
     const { username, password} = registerVm;
@@ -45,8 +49,8 @@ export class UserController {
 
   }
   @Post('login')
-  @ApiResponse({status: HttpStatus.CREATED, type: LoginResponseVm})
-  @ApiResponse({status: HttpStatus.BAD_REQUEST, type: ApiException})
+  @ApiCreatedResponse({type: LoginResponseVm})
+  @ApiBadRequestResponse({type: ApiException})
   @ApiOperation(GetOperationId(User.modelName, 'Login'))
   async login(@Body() loginVm: LoginVm): Promise<LoginResponseVm>{
     const fields = Object.keys(loginVm);
@@ -57,6 +61,23 @@ export class UserController {
     });
     return this._userService.login(loginVm);
   }
+
+  @Get()
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard('jwt'),RolesGuard)
+  // @Roles(UserRole.User)
+  @ApiCreatedResponse({type: LoginResponseVm})
+  @ApiBadRequestResponse({type: ApiException})
+  @ApiOperation(GetOperationId(User.modelName, 'GetAll'))
+  async getAll(): Promise<UserVm[]>{
+    try{
+      return this._userService.findAll({});
+    }catch(e){
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+  }
+
 
 
 }

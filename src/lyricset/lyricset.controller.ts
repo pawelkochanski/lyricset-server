@@ -1,43 +1,63 @@
+import { UserService } from './../user/user.service';
+import { User } from './../user/models/user.model';
+
+import { UserRole } from './../user/models/user-role.enum';
 import { LyricsetService } from './lyricset.service';
-import { Controller, Post, HttpStatus, Body, HttpException, Get, Param, Put, Delete } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { Controller, Post, HttpStatus, Body, HttpException, Get, Param, Put, Delete, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse, ApiOkResponse } from '@nestjs/swagger';
 import { Lyricset } from './models/lyricset.model';
 import { GetOperationId } from 'src/shared/utilities/get-operation-id';
 import { LyricsetVm } from './models/view-models/lyricset-vm.model';
 import { ApiException } from 'src/shared/api-exception.model';
 import { LyricSetParams } from './models/view-models/lyricset.params.model';
+import { Roles } from 'src/shared/decorators/roles.decorator';
+import { RolesGuard } from 'src/shared/guards/roles.guard';
+import { AuthGuard } from '@nestjs/passport';
+import {User as UserDecorator}  from 'src/shared/decorators/user.decorator' ;
 
 @Controller('lyricsets')
+@ApiBearerAuth()
 @ApiTags(Lyricset.modelName)
 export class LyricsetController {
-    constructor(private readonly _lyricsetService: LyricsetService){}
+    constructor(private readonly _lyricsetService: LyricsetService,
+        private readonly _userService: UserService){}
 
     @Post()
-    @ApiResponse({status: HttpStatus.CREATED, type: LyricsetVm})
-    @ApiResponse({status: HttpStatus.BAD_REQUEST, type: ApiException})
+    @UseGuards(AuthGuard('jwt'),RolesGuard)
+    @Roles(UserRole.User)
+    @ApiCreatedResponse({type: LyricsetVm})
+    @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(Lyricset.modelName, 'Create'))
-    async create(@Body() params: LyricSetParams): Promise<LyricsetVm>{
+    async create(@Body() params: LyricSetParams, @UserDecorator() user: User): Promise<LyricsetVm>{
         const name = params.name;
-
+        console.log(user);
         if(!name){
             throw new HttpException('Name is required', HttpStatus.BAD_REQUEST);
         }
 
         try {
             const newLyricset = await this._lyricsetService.createLyricset(params);
+            user.setlist.push(newLyricset.id);
+            try{
+                await this._userService.update(user.id, user);
+            } catch(e){
+                await this._lyricsetService.delete(newLyricset.id);
+                throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             return this._lyricsetService.map<LyricsetVm>(newLyricset);
-        } catch (error) {
-            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (e) {
+            throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Get(':id')
     @ApiResponse({status: HttpStatus.OK, type: LyricsetVm})
-    @ApiResponse({status: HttpStatus.BAD_REQUEST, type: ApiException})
+    @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(Lyricset.modelName, 'Get'))
     async getById(@Param('id') id: string): Promise<LyricsetVm>{
         try{
             const lyricset = await this._lyricsetService.fidnById(id);
+            console.log(lyricset);
             return this._lyricsetService.map<LyricsetVm>(lyricset.toJSON());
         } catch(error){
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -45,8 +65,8 @@ export class LyricsetController {
     }
 
     @Put()
-    @ApiResponse({status: HttpStatus.CREATED, type: LyricsetVm})
-    @ApiResponse({status: HttpStatus.BAD_REQUEST, type: ApiException})
+    @ApiOkResponse({type: LyricsetVm})
+    @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(Lyricset.modelName, 'Update'))
     async update(@Body() vm: LyricsetVm): Promise<LyricsetVm>{
         const{id, name, description, tracklist, imageUrl} = vm;
@@ -76,8 +96,10 @@ export class LyricsetController {
     }
 
     @Delete(':id')
-    @ApiResponse({status: HttpStatus.CREATED, type: LyricsetVm})
-    @ApiResponse({status: HttpStatus.BAD_REQUEST, type: ApiException})
+    @Roles(UserRole.Admin,UserRole.User)
+    @UseGuards(AuthGuard('jwt'),RolesGuard)
+    @ApiOkResponse({type: LyricsetVm})
+    @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(Lyricset.modelName, 'Delete'))
     async delete(@Param('id')id: string): Promise<LyricsetVm>{
         try {

@@ -12,6 +12,7 @@ async function bootstrap() {
     .setTitle('lyricset')
     .setDescription('API Documentation')
     .setVersion('1.0.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerOptions);
   SwaggerModule.setup('/api/docs', app, document, {
