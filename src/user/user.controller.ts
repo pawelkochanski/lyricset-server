@@ -1,4 +1,5 @@
-import { Body, Controller, HttpException, HttpStatus, Post, Get, UseGuards } from '@nestjs/common';
+import { ValidationPipe } from './../shared/pipes/validation.pipe';
+import { Body, Controller, HttpException, HttpStatus, Post, Get, UseGuards, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse, ApiOkResponse } from '@nestjs/swagger';
 import { User} from './models/user.model';
 import { UserService } from './user.service';
@@ -22,8 +23,8 @@ export class UserController {
   @ApiCreatedResponse({type: LoginResponseVm})
   @ApiBadRequestResponse({type: ApiException})
   @ApiOperation(GetOperationId(User.modelName, 'Register'))
-  async register(@Body() registerVm: RegisterVm): Promise<UserVm>{
-    const { username, password} = registerVm;
+  async register(@Body(new ValidationPipe()) registerVm: RegisterVm): Promise<UserVm>{
+    const { username, email, password} = registerVm;
 
     if(!username){
       throw new HttpException('Username is required', HttpStatus.BAD_REQUEST);
@@ -32,16 +33,30 @@ export class UserController {
     if(!password){
       throw new HttpException('Password is required', HttpStatus.BAD_REQUEST);
     }
+
+    if(!email){
+      throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
+    }
     
-    let exist;
+    let existEmail, existUsername;
     try{
-      exist = await this._userService.findOne({username})
+      existEmail = await this._userService.findOne({email})
     }catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    if(exist){
-      throw new HttpException(`${username} exists`, HttpStatus.BAD_REQUEST);
+    try{
+      existEmail = await this._userService.findOne({username})
+    }catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if(existEmail){
+      throw new HttpException(`email exists`, HttpStatus.BAD_REQUEST);
+    }
+
+    if(existUsername){
+      throw new HttpException(`username exists`, HttpStatus.BAD_REQUEST);
     }
 
     const newUser = await this._userService.register(registerVm);
@@ -62,19 +77,36 @@ export class UserController {
     return this._userService.login(loginVm);
   }
 
-  @Get()
-  // @ApiBearerAuth()
-  // @UseGuards(AuthGuard('jwt'),RolesGuard)
-  // @Roles(UserRole.Admin)
-  @ApiOkResponse({type: UserVm, isArray: true})
+  @Get('username')
+  @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(User.modelName, 'GetAll'))
-  async getAll(): Promise<UserVm[]>{
+  @ApiOperation(GetOperationId(User.modelName, 'CheckUsername'))
+  async checkUsername(@Query('username') username: string): Promise<void>{
+    let exists;
     try{
-      const users = await this._userService.findAll({});
-      return this._userService.map<UserVm[]>(users.map(user => user.toJSON()));
+      exists = await this._userService.findOne({username});
     }catch(e){
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if(exists){
+      throw new HttpException(`Username ${username} already exists.`, HttpStatus.BAD_REQUEST);
+    }
+    
+  }
+
+  @Get('email')
+  @ApiOkResponse()
+  @ApiBadRequestResponse({type: ApiException})
+  @ApiOperation(GetOperationId(User.modelName, 'CheckEmail'))
+  async checkEmail(@Query('email') email: string): Promise<void>{
+    let exists;
+    try{
+      exists = await this._userService.findOne({email});
+    }catch(e){
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if(exists){
+      throw new HttpException(`Email ${email} already exists.`, HttpStatus.BAD_REQUEST);
     }
     
   }
