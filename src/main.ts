@@ -7,7 +7,8 @@ declare const module: any;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const hostDomain = AppModule.isDev ? '${AppModule.host} : ${AppModule.port}' : AppModule.host;
-
+  app.setGlobalPrefix('api');
+  
   const swaggerOptions = new DocumentBuilder()
     .setTitle('lyricset')
     .setDescription('API Documentation')
@@ -31,7 +32,8 @@ async function bootstrap() {
   }
 
   app.useGlobalFilters(new HttpExceptionFilter());
-
+  app.enableCors();
   await app.listen(AppModule.port);
+ 
 }
 bootstrap();

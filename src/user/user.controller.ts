@@ -1,5 +1,5 @@
 import { Body, Controller, HttpException, HttpStatus, Post, Get, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse, ApiOkResponse } from '@nestjs/swagger';
 import { User} from './models/user.model';
 import { UserService } from './user.service';
 import { RegisterVm } from './models/view-models/register-vm.model';
@@ -65,13 +65,14 @@ export class UserController {
   @Get()
   // @ApiBearerAuth()
   // @UseGuards(AuthGuard('jwt'),RolesGuard)
-  // @Roles(UserRole.User)
-  @ApiCreatedResponse({type: LoginResponseVm})
+  // @Roles(UserRole.Admin)
+  @ApiOkResponse({type: UserVm, isArray: true})
   @ApiBadRequestResponse({type: ApiException})
   @ApiOperation(GetOperationId(User.modelName, 'GetAll'))
   async getAll(): Promise<UserVm[]>{
     try{
-      return this._userService.findAll({});
+      const users = await this._userService.findAll({});
+      return this._userService.map<UserVm[]>(users.map(user => user.toJSON()));
     }catch(e){
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }

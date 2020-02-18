@@ -57,7 +57,6 @@ export class LyricsetController {
     async getById(@Param('id') id: string): Promise<LyricsetVm>{
         try{
             const lyricset = await this._lyricsetService.fidnById(id);
-            console.log(lyricset);
             return this._lyricsetService.map<LyricsetVm>(lyricset.toJSON());
         } catch(error){
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
