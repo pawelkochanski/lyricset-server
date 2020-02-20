@@ -9,13 +9,17 @@ import { InstanceType } from 'typegoose';
 
 @Injectable()
 export class AuthService {
-  private readonly jwtOptions: SignOptions;
+  private readonly _jwtOptions: SignOptions;
   private readonly jwtKey: string;
 
   constructor(@Inject(forwardRef(() => UserService)) readonly _userService: UserService,
               private readonly _configurationService: ConfigurationService){
-    this.jwtOptions = {expiresIn: '12h'};
+    this._jwtOptions = {expiresIn: '12h'};
     this.jwtKey = _configurationService.get(Configuration.JWT_KEY);
+  }
+
+  get jwtOptions(){
+    return this._jwtOptions
   }
 
   async singPayload(payload: JwtPayload): Promise<string>{

@@ -58,13 +58,15 @@ export class UserService extends BaseService<User> {
 
     const payload: JwtPayload = {
       username: user.username,
-      role: user.role,
+      role: user.role
     };
 
+    const exp = this._authService.jwtOptions.expiresIn;
     const token = await this._authService.singPayload(payload);
     const userVm: UserVm = await this.map<UserVm>(user.toJSON());
 
     return{
+      exp,
       token,
       user: userVm,
     }

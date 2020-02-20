@@ -9,10 +9,6 @@ import { ApiException } from '../shared/api-exception.model';
 import { GetOperationId } from '../shared/utilities/get-operation-id';
 import { LoginResponseVm } from './models/view-models/login-response-vm';
 import { LoginVm } from './models/view-models/login-vm.model';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/shared/decorators/roles.decorator';
-import { RolesGuard } from 'src/shared/guards/roles.guard';
-import { UserRole } from './models/user-role.enum';
 
 @Controller('users')
 @ApiTags(User.modelName)
@@ -77,36 +73,30 @@ export class UserController {
     return this._userService.login(loginVm);
   }
 
-  @Get('username')
+  @Get('usernames')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(User.modelName, 'CheckUsername'))
-  async checkUsername(@Query('username') username: string): Promise<void>{
-    let exists;
+  @ApiOperation(GetOperationId(User.modelName, 'GetUsernames'))
+  async getUsernames(): Promise<{usernames: string[]}>{
     try{
-      exists = await this._userService.findOne({username});
+      const users = await this._userService.findAll();
+      return {usernames: users.map(user => {return user.username})};
     }catch(e){
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    if(exists){
-      throw new HttpException(`Username ${username} already exists.`, HttpStatus.BAD_REQUEST);
     }
     
   }
 
-  @Get('email')
+  @Get('emails')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(User.modelName, 'CheckEmail'))
-  async checkEmail(@Query('email') email: string): Promise<void>{
-    let exists;
+  @ApiOperation(GetOperationId(User.modelName, 'GetEmails'))
+  async getEmails(): Promise<{emails: string[]}>{
     try{
-      exists = await this._userService.findOne({email});
+      const users = await this._userService.findAll();
+      return {emails: users.map(user => {return user.email})};
     }catch(e){
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    if(exists){
-      throw new HttpException(`Email ${email} already exists.`, HttpStatus.BAD_REQUEST);
     }
     
   }
