@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { sign, SignOptions } from 'jsonwebtoken';
+import { sign, SignOptions, verify } from 'jsonwebtoken';
 import { UserService } from '../../user/user.service';
 import { ConfigurationService } from '../configuration/configuration/configuration.service';
 import { Configuration } from '../configuration/configuration/configuration.enum';
@@ -9,21 +9,22 @@ import { InstanceType } from 'typegoose';
 
 @Injectable()
 export class AuthService {
-  private readonly _jwtOptions: SignOptions;
+  private readonly jwtOptions: SignOptions;
   private readonly jwtKey: string;
 
   constructor(@Inject(forwardRef(() => UserService)) readonly _userService: UserService,
               private readonly _configurationService: ConfigurationService){
-    this._jwtOptions = {expiresIn: '12h'};
+    this.jwtOptions = {expiresIn: '12h'};
     this.jwtKey = _configurationService.get(Configuration.JWT_KEY);
   }
 
-  get jwtOptions(){
-    return this._jwtOptions
-  }
 
   async singPayload(payload: JwtPayload): Promise<string>{
     return sign(payload,this.jwtKey,this.jwtOptions);
+  }
+
+  verify(token: string){
+    return verify(token, this.jwtKey);
   }
 
   async validatePayload(payload: JwtPayload): Promise<InstanceType<User>>{

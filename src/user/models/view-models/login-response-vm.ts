@@ -3,8 +3,6 @@ import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-prop
 
 export class LoginResponseVm{
   @ApiModelProperty()
-  exp: string | number;
-  @ApiModelProperty()
   token:string;
   @ApiModelProperty()
   user: UserVm;

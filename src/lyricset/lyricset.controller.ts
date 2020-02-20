@@ -50,6 +50,25 @@ export class LyricsetController {
         }
     }
 
+    @Get('')
+    @UseGuards(AuthGuard('jwt'),RolesGuard)
+    @Roles(UserRole.User)
+    @ApiResponse({status: HttpStatus.OK, type: LyricsetVm, isArray: true})
+    @ApiBadRequestResponse({type: ApiException})
+    @ApiOperation(GetOperationId(Lyricset.modelName, 'GetAll'))
+    async getAll(@UserDecorator() user: User): Promise<LyricsetVm[]>{
+        const returnSets : LyricsetVm[] = [];
+        for(const setid of user.setlist){
+            try {
+                returnSets.push(await this._lyricsetService.fidnById(setid));
+            } catch (error) {
+                throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            
+        }
+        return returnSets;
+    }
+
     @Get(':id')
     @ApiResponse({status: HttpStatus.OK, type: LyricsetVm})
     @ApiBadRequestResponse({type: ApiException})
