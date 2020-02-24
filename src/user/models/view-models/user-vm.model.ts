@@ -13,4 +13,10 @@ export class UserVm extends BaseModelVm{
   email: string;
   @ApiModelPropertyOptional({enum: EnumToArray(UserRole)})
   role?: UserRole
+  @ApiModelProperty()
+  displayname:string;
+  @ApiModelProperty()
+  bio: string;
+  @ApiModelProperty()
+  url: string;
 }

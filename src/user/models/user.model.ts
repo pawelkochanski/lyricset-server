@@ -13,6 +13,14 @@ export class User extends BaseModel<User>{
   email: string;
   @prop({default: []})
   setlist: string[];
+  @prop()
+  displayname:string;
+  @prop({default: ''})
+  bio: string;
+  @prop({default: ''})
+  url: string;
+  @prop({default:''})
+  avatarUrl: string;
 
 
 

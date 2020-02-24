@@ -1,3 +1,4 @@
+import { ProfileVm } from './models/view-models/profile-vm';
 import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { BaseService } from '../shared/base.service';
 import { User } from './models/user.model';
@@ -29,6 +30,7 @@ export class UserService extends BaseService<User> {
     const newUser = new this._model();
     newUser.username = username;
     newUser.email = email;
+    newUser.displayname = username;
 
     const salt = await genSalt(10);
     newUser.password = await hash(password, salt);
@@ -69,5 +71,14 @@ export class UserService extends BaseService<User> {
       user: userVm,
     }
 
+  }
+
+  async setAvatar(user: User, avatarUrl: string) :Promise<void>{
+    if(avatarUrl!==''){
+      user.avatarUrl = avatarUrl;
+      this.update(user.id, user);
+      return;
+    }
+    throw new HttpException('Wrong AvatarUrl', HttpStatus.BAD_REQUEST);
   }
 }
