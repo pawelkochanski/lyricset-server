@@ -81,4 +81,28 @@ export class UserService extends BaseService<User> {
     }
     throw new HttpException('Wrong AvatarId', HttpStatus.BAD_REQUEST);
   }
+
+
+  async changePassword(user: User, password: string, newpassword: string) : Promise<User> {
+
+    if(!password || !newpassword){
+      throw new HttpException('No password.', HttpStatus.BAD_REQUEST);
+    }
+
+    const isMatch = await compare(password, user.password);
+
+    if(!isMatch){
+      throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+    }
+    const salt = await genSalt(10);
+    user.password = await hash(newpassword, salt);
+
+    try{
+      const result = await this.update(user.id, user);
+      return result.toJSON() as User;
+    } catch(e){
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+  }
 }

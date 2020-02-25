@@ -114,71 +114,53 @@ export class UserController {
     
   }
 
-    @Put()
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'),RolesGuard)
-    @Roles(UserRole.User)
-    @ApiCreatedResponse()
-    @ApiBadRequestResponse({type: ApiException})
-    @ApiOperation(GetOperationId(User.modelName, 'Update'))
-    async update(@Body() profileVm: ProfileVm, @UserDecorator() user: User): Promise<void>{
-        const{displayname, bio, url} = profileVm;
+  @Put()
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'),RolesGuard)
+  @Roles(UserRole.User)
+  @ApiCreatedResponse()
+  @ApiBadRequestResponse({type: ApiException})
+  @ApiOperation(GetOperationId(User.modelName, 'Update'))
+  async updateSettings(@Body() profileVm: ProfileVm, @UserDecorator() user: User): Promise<void>{
+      const{displayname, bio, url} = profileVm;
+    
+      if(displayname!==''){
+        console.log(displayname);
+        user.displayname = displayname;
+      }
+      if (bio!=='') {
+        console.log(bio);
+        user.bio = bio;
+      }
+      if(url!==''){
+        console.log(url);
+        user.url = url;
+      }
       
-        if(displayname!==''){
-          console.log(displayname);
-          user.displayname = displayname;
-        }
-        if (bio!=='') {
-          console.log(bio);
-          user.bio = bio;
-        }
-        if(url!==''){
-          console.log(url);
-          user.url = url;
-        }
-       
-        try{
-          await this._userService.update(user.id, user);
-        }catch(e){
-          throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return 
-    }
+      try{
+        await this._userService.update(user.id, user);
+      }catch(e){
+        throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      return 
+  }
 
-    @Post('avatar')
-    @UseInterceptors(FileInterceptor('file',{
-      storage: diskStorage({
-        destination: './avatars',
-        filename:  editFileName
-      }),
-      fileFilter: imageFileFilter,
-    }
-    ))
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'),RolesGuard)
-    @Roles(UserRole.User)
-    @ApiCreatedResponse()
-    @ApiConsumes('multipart/form-data')
-    @ApiBody({
-      description: 'Avatars',
-      type: Avatar,
-    })
-    @ApiBadRequestResponse({type: ApiException})
-    @ApiOperation(GetOperationId(User.modelName, 'PostAvatar'))
-    async postAvatar(@UploadedFile() file, @UserDecorator() user): Promise<void>{
-      console.log(file);
-      this._userService.setAvatar(user, `${AppModule.host}:${AppModule.port}/api/users${file.path}`)
-      console.log(user);
-    }
-
-    @Get('avatars/:id')
-    @ApiCreatedResponse()
-    @ApiBadRequestResponse({type: ApiException})
-    @ApiOperation(GetOperationId(User.modelName, 'ServeAvatar'))
-    async serveAvatar(@Param('id')fileId: string, @Res() res): Promise<void>{
-      res.sendFile(fileId, { root: 'avatars'});
-    }
-
+  @Put('password')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'),RolesGuard)
+  @Roles(UserRole.User)
+  @ApiOkResponse()
+  @ApiBadRequestResponse({type: ApiException})
+  @ApiOperation(GetOperationId(User.modelName, 'Update'))
+  async changePassword(@Body() passwordVm: {password: string, newpassword: string}, @UserDecorator() user: User): Promise<void>{
+      
+      try{
+        await this._userService.changePassword(user, passwordVm.password, passwordVm.newpassword);
+      }catch(e){
+        throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      return 
+  }
 
 
 }
