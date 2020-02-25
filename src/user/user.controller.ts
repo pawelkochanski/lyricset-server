@@ -21,7 +21,7 @@ import { LyricsetVm } from 'src/lyricset/models/view-models/lyricset-vm.model';
 import { iif } from 'rxjs';
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import {diskStorage} from 'multer';
-import { Avatar } from 'src/avatar/avatar';
+import { Avatar } from 'src/avatar/models/avatar';
 
 @Controller('users')
 @ApiTags(User.modelName)
@@ -167,11 +167,11 @@ export class UserController {
     @ApiOperation(GetOperationId(User.modelName, 'PostAvatar'))
     async postAvatar(@UploadedFile() file, @UserDecorator() user): Promise<void>{
       console.log(file);
-      this._userService.setAvatar(user, `${AppModule.host}:${AppModule.port}/${file.path}`)
+      this._userService.setAvatar(user, `${AppModule.host}:${AppModule.port}/api/users${file.path}`)
       console.log(user);
     }
 
-    @Get('avatar/:id')
+    @Get('avatars/:id')
     @ApiCreatedResponse()
     @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(User.modelName, 'ServeAvatar'))

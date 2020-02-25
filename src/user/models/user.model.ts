@@ -20,7 +20,7 @@ export class User extends BaseModel<User>{
   @prop({default: ''})
   url: string;
   @prop({default:''})
-  avatarUrl: string;
+  avatarId: string;
 
 
 
