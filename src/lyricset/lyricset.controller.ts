@@ -58,14 +58,13 @@ export class LyricsetController {
     @ApiOperation(GetOperationId(Lyricset.modelName, 'GetAll'))
     async getAll(@UserDecorator() user: User): Promise<LyricsetVm[]>{
         const returnSets : LyricsetVm[] = [];
-        for(const setid of user.setlist){
+        user.setlist.forEach(async (setid) =>{
             try {
                 returnSets.push(await this._lyricsetService.fidnById(setid));
             } catch (error) {
                 throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            
-        }
+        })
         return returnSets;
     }
 
