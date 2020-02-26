@@ -68,6 +68,7 @@ export class AvatarController {
       if(user.avatarId === fileId){
         user.avatarId = null;
         fs.unlink(`avatars\\${fileId}`, (err) =>{console.log(err)});
+        this._userService.update(user.id, user);
         return;
       }
       throw new HttpException('Unauthorized.', HttpStatus.UNAUTHORIZED);
