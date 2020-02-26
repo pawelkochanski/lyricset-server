@@ -105,4 +105,30 @@ export class UserService extends BaseService<User> {
     }
 
   }
+
+  async changeUsername(user: User, username: string, password: string){
+    if(!user || !username || !password){
+      throw new HttpException('Missing arguments', HttpStatus.BAD_REQUEST);
+    }
+    const isMatch = await compare(password, user.password);
+    if(!isMatch){
+      throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+    }
+    let exists;
+    try {
+      exists = await this.findOne({username: username});
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if(exists){
+      throw new HttpException('username exists', HttpStatus.BAD_REQUEST);
+    }
+    user.username = username;
+
+    try {
+      const result = await this.update(user.id,user);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

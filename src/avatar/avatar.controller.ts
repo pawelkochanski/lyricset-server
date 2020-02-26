@@ -63,10 +63,13 @@ export class AvatarController {
     @ApiOkResponse()
     @ApiBadRequestResponse({type: ApiException})
     @ApiOperation({summary: 'RemoveAvatar'})
-    async removeAvatar(@Param('id')fileId: string, @UserDecorator() user, @Req() req): Promise<void>{ 
-      if(user.avatarUrl === `${AppModule.host}:${AppModule.port}${req.url}`){
-        user.avatarUrl = null;
+    async removeAvatar(@Param('id')fileId: string, @UserDecorator() user, @Req() req): Promise<void>{
+      console.log(user);
+      if(user.avatarId === fileId){
+        user.avatarId = null;
         fs.unlink(`avatars\\${fileId}`, (err) =>{console.log(err)});
+        return;
       }
+      throw new HttpException('Unauthorized.', HttpStatus.UNAUTHORIZED);
     }
 }

@@ -1,3 +1,4 @@
+import { PasswordVm } from './models/view-models/password-vm';
 import { AppModule } from './../app.module';
 import { editFileName, imageFileFilter } from './../shared/middlewares/image-filter';
 import { ProfileVm } from './models/view-models/profile-vm';
@@ -118,7 +119,7 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'),RolesGuard)
   @Roles(UserRole.User)
-  @ApiCreatedResponse()
+  @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
   @ApiOperation(GetOperationId(User.modelName, 'Update'))
   async updateSettings(@Body() profileVm: ProfileVm, @UserDecorator() user: User): Promise<void>{
@@ -151,8 +152,8 @@ export class UserController {
   @Roles(UserRole.User)
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(User.modelName, 'Update'))
-  async changePassword(@Body() passwordVm: {password: string, newpassword: string}, @UserDecorator() user: User): Promise<void>{
+  @ApiOperation(GetOperationId(User.modelName, 'changePassword'))
+  async changePassword(@Body() passwordVm: PasswordVm, @UserDecorator() user: User): Promise<void>{
       
       try{
         await this._userService.changePassword(user, passwordVm.password, passwordVm.newpassword);
@@ -162,5 +163,17 @@ export class UserController {
       return 
   }
 
+  @Put('username')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'),RolesGuard)
+  @Roles(UserRole.User)
+  @ApiOkResponse()
+  @ApiBadRequestResponse({type: ApiException})
+  @ApiOperation(GetOperationId(User.modelName, 'changeUsername'))
+  async changeUsername(@Body() usernameVm: LoginVm, @UserDecorator() user: User): Promise<void>{
+      
+      await this._userService.changeUsername(user, usernameVm.username, usernameVm.password);
+      return 
+  }
 
 }

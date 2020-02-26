@@ -28,6 +28,6 @@ export class AuthService {
   }
 
   async validatePayload(payload: JwtPayload): Promise<InstanceType<User>>{
-    return this._userService.findOne({username: payload.username.toLowerCase()});
+    return this._userService.findOne({username: payload.username});
   }
 }
