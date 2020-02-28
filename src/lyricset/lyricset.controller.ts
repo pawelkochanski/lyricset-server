@@ -30,7 +30,6 @@ export class LyricsetController {
     @ApiOperation(GetOperationId(Lyricset.modelName, 'Create'))
     async create(@Body() params: LyricSetParams, @UserDecorator() user: User): Promise<LyricsetVm>{
         const name = params.name;
-        console.log(user);
         if(!name){
             throw new HttpException('Name is required', HttpStatus.BAD_REQUEST);
         }
@@ -58,13 +57,13 @@ export class LyricsetController {
     @ApiOperation(GetOperationId(Lyricset.modelName, 'GetAll'))
     async getAll(@UserDecorator() user: User): Promise<LyricsetVm[]>{
         const returnSets : LyricsetVm[] = [];
-        user.setlist.forEach(async (setid) =>{
+        for (const setid of user.setlist) {
             try {
                 returnSets.push(await this._lyricsetService.fidnById(setid));
             } catch (error) {
                 throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        })
+        }
         return returnSets;
     }
 
@@ -126,5 +125,32 @@ export class LyricsetController {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+
+    @Delete('user/:id')
+    @Roles(UserRole.Admin,UserRole.User)
+    @UseGuards(AuthGuard('jwt'),RolesGuard)
+    @ApiOkResponse({type: LyricsetVm})
+    @ApiBadRequestResponse({type: ApiException})
+    @ApiOperation(GetOperationId(Lyricset.modelName, 'DeleteFromUser'))
+    async deleteUsersset(@Param('id')id: string, @UserDecorator() user: User): Promise<void>{
+        console.log(user);
+        try {
+            const deleted = this._lyricsetService.delete(id);
+        } catch (error) {
+            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        const length = user.setlist.length;
+        user.setlist = user.setlist.splice(user.setlist.indexOf(id), 1);
+        if(length===user.setlist.length){
+            throw new HttpException('set doesnt exist', HttpStatus.BAD_REQUEST);
+        }
+        try {
+            this._userService.update(user.id, user);
+        } catch (error) {
+            throw new HttpException(error, HttpStatus.BAD_REQUEST);
+        }
+        console.log(user);
     }
 }
