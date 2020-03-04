@@ -135,14 +135,13 @@ export class LyricsetController {
     @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(Lyricset.modelName, 'DeleteFromUser'))
     async deleteUsersset(@Param('id')id: string, @UserDecorator() user: User): Promise<void>{
-        console.log(user);
+        const length = user.setlist.length;
         try {
             const deleted = this._lyricsetService.delete(id);
         } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        const length = user.setlist.length;
-        user.setlist = user.setlist.splice(user.setlist.indexOf(id), 1);
+        user.setlist.splice(user.setlist.indexOf(id), 1);
         if(length===user.setlist.length){
             throw new HttpException('set doesnt exist', HttpStatus.BAD_REQUEST);
         }
@@ -151,6 +150,5 @@ export class LyricsetController {
         } catch (error) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
-        console.log(user);
     }
 }
