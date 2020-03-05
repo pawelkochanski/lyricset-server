@@ -1,3 +1,4 @@
+import { LyricsetUpdateVm } from './models/view-models/update-vm.model';
 import { UserService } from './../user/user.service';
 import { User } from './../user/models/user.model';
 
@@ -80,14 +81,16 @@ export class LyricsetController {
         }
     }
 
-    @Put()
-    @ApiOkResponse({type: LyricsetVm})
+    @Put(':id')
+    @UseGuards(AuthGuard('jwt'),RolesGuard)
+    @Roles(UserRole.User)
+    @ApiOkResponse()
     @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(Lyricset.modelName, 'Update'))
-    async update(@Body() vm: LyricsetVm): Promise<LyricsetVm>{
-        const{id, name, description, tracklist, imageUrl} = vm;
+    async update(@Param('id') id: string, @Body() vm: LyricsetUpdateVm, @UserDecorator() user: User){
+        const{name, description, tracklist} = vm;
 
-        if(!vm || !id){
+        if(!vm){
             throw new HttpException('Missing parameters', HttpStatus.BAD_REQUEST);
         }
 
@@ -97,14 +100,16 @@ export class LyricsetController {
             throw new HttpException(`${id} Not found`, HttpStatus.BAD_REQUEST);
         }
 
+        if(!user.setlist.includes(id)){
+            throw new HttpException('Permission denied.', HttpStatus.UNAUTHORIZED);
+        }
+
         exist.name = name;
         exist.description = description
         exist.tracklist = tracklist;
-        exist.imageUrl = imageUrl;
 
         try{
             const updated = await this._lyricsetService.update(id,exist);
-            return this._lyricsetService.map<LyricsetVm>(updated.toJSON());
         }catch(error){
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
