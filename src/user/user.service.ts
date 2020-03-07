@@ -76,7 +76,7 @@ export class UserService extends BaseService<User> {
   async setAvatar(user: User, avatarId: string) :Promise<void>{
     if(avatarId!==''){
       user.avatarId = avatarId;
-      this.update(user.id, user);
+      await this.update(user.id, user);
       return;
     }
     throw new HttpException('Wrong AvatarId', HttpStatus.BAD_REQUEST);

@@ -22,7 +22,7 @@ import { LyricsetVm } from 'src/lyricset/models/view-models/lyricset-vm.model';
 import { iif } from 'rxjs';
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import {diskStorage} from 'multer';
-import { Avatar } from 'src/avatar/models/avatar';
+import { Image } from 'src/image/models/image';
 
 @Controller('users')
 @ApiTags(User.modelName)
@@ -119,10 +119,10 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'),RolesGuard)
   @Roles(UserRole.User)
-  @ApiOkResponse()
+  @ApiOkResponse({type: ProfileVm})
   @ApiBadRequestResponse({type: ApiException})
   @ApiOperation(GetOperationId(User.modelName, 'Update'))
-  async updateSettings(@Body() profileVm: ProfileVm, @UserDecorator() user: User): Promise<void>{
+  async updateSettings(@Body() profileVm: ProfileVm, @UserDecorator() user: User): Promise<ProfileVm>{
       const{displayname, bio, url} = profileVm;
     
       if(displayname!==''){
@@ -140,10 +140,10 @@ export class UserController {
       
       try{
         await this._userService.update(user.id, user);
+        return {displayname: user.displayname, bio: user.bio, url: user.url};
       }catch(e){
         throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      return 
   }
 
   @Put('password')

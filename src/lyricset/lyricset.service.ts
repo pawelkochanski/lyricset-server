@@ -31,4 +31,26 @@ export class LyricsetService extends BaseService<Lyricset> {
 
     }
 
+    async setImageSet(imageId: string, setId: string): Promise<void>{
+        let exists;
+        try{
+            exists = await this.fidnById(setId);
+        }catch (e) {
+            throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if(!exists){
+            throw new HttpException('set doesnt exist.', HttpStatus.BAD_REQUEST);
+        }
+
+        exists.imageId = imageId;
+
+        try {
+            await this.update(setId, exists);
+        }catch (e) {
+            throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
 }

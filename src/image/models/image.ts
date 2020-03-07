@@ -1,8 +1,6 @@
-import { BaseModel } from './../../shared/base.model';
 import { ApiProperty } from "@nestjs/swagger";
 
-export class Avatar{
+export class Image{
     @ApiProperty({ type: 'string', format: 'binary' })
     file: any;
   }
-  

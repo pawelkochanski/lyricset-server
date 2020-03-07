@@ -8,7 +8,7 @@ import { ConfigurationService } from './shared/configuration/configuration/confi
 import { Configuration } from './shared/configuration/configuration/configuration.enum';
 import { UserModule } from './user/user.module';
 import { LyricsetModule } from './lyricset/lyricset.module';
-import { AvatarsModule } from './avatar/avatar.module';
+import { ImageModule } from './image/image.module';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { AvatarsModule } from './avatar/avatar.module';
     LyricsetModule,
     LyricsetModule,
     MulterModule.register({dest:'./files'}),
-    AvatarsModule
+    ImageModule
   ],
   controllers: [AppController],
   providers: [AppService],

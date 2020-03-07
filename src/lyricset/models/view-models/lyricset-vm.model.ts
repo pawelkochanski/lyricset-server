@@ -7,7 +7,7 @@ export class LyricsetVm extends BaseModelVm{
     @ApiModelProperty()
     description: string;
     @ApiModelProperty()
-    imageUrl: string;
+    imageId: string;
     @ApiModelProperty()
     tracklist: string[];
 }

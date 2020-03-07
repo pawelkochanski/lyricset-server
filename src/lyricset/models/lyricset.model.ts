@@ -6,7 +6,7 @@ export class Lyricset extends BaseModel<Lyricset>{
     @prop({default: 'description'})
     description: string;
     @prop({default: ''})
-    imageUrl: string;
+    imageId: string;
     @prop({default: []})
     tracklist: string[];
 
