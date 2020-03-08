@@ -1,8 +1,8 @@
 import { LyricsetUpdateVm } from './models/view-models/update-vm.model';
-import { UserService } from './../user/user.service';
-import { User } from './../user/models/user.model';
+import { UserService } from '../user/user.service';
+import { User } from '../user/models/user.model';
 
-import { UserRole } from './../user/models/user-role.enum';
+import { UserRole } from '../user/models/user-role.enum';
 import { LyricsetService } from './lyricset.service';
 import { Controller, Post, HttpStatus, Body, HttpException, Get, Param, Put, Delete, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse, ApiOkResponse } from '@nestjs/swagger';
