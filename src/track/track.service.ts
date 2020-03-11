@@ -3,26 +3,49 @@ import { BaseService } from '../shared/base.service';
 import { Track } from './models/track.model';
 import { Configuration } from '../shared/configuration/configuration/configuration.enum';
 import { map } from 'rxjs/operators';
+import { forkJoin, Observable } from 'rxjs';
 
 @Injectable()
-export class TrackService extends BaseService<Track>{
+export class TrackService extends BaseService<Track> {
   constructor(private readonly httpService: HttpService) {
     super();
   }
 
-  apiSearchByTitle(track: string) {
+  apiSearchByTitle(track: string, page_size: string, page: string) {
     return this.httpService.get(Configuration.API_URL + 'track.search',
-      {params:{
+      {
+        params: {
           apikey: Configuration.API_KEY,
-          // eslint-disable-next-line @typescript-eslint/camelcase
           s_track_rating: 'desc',
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          q_track: track
-        }})
+          q_track: track,
+          f_has_lyrics: 1,
+          page_size: page_size,
+          page: page,
+        },
+      })
       .pipe(
-          map(response => response.data.message.body)
-    )
+        map(response => response.data.message.body),
+      );
   }
+
+  apiSearchByArtist(artist: string, page_size: string, page: string) {
+    return this.httpService.get(Configuration.API_URL + 'track.search',
+      {
+        params: {
+          apikey: Configuration.API_KEY,
+          s_track_rating: 'desc',
+          q_artist: artist,
+          f_has_lyrics: 1,
+          page_size: page_size,
+          page: page,
+        },
+      })
+      .pipe(
+        map(response => response.data.message.body),
+      );
+  }
+
+
 
 
 }
