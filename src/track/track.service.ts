@@ -45,7 +45,17 @@ export class TrackService extends BaseService<Track> {
       );
   }
 
-
+  getTrackLyrics(track_id: string){
+    return this.httpService.get(Configuration.API_URL + 'track.lyrics.get',
+      {
+        params: {
+          apikey: Configuration.API_KEY,
+          track_id: track_id
+        }
+      }).pipe(
+      map(response => response.data.message.body),
+    );
+  }
 
 
 }

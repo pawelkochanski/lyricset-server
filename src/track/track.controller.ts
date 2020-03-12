@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -21,9 +21,9 @@ export class TrackController {
   }
 
   @Get('search/title')
-  @ApiOkResponse({type : TracklistVm})
+  @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(Track.modelName, 'Search'))
+  @ApiOperation(GetOperationId(Track.modelName, 'SearchByTitle'))
   searchTrackByTitle(
     @Query('track') track: string,
     @Query('page_size') page_size: string,
@@ -32,9 +32,9 @@ export class TrackController {
   }
 
   @Get('search/artist')
-  @ApiOkResponse({type : TracklistVm})
+  @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(Track.modelName, 'Search'))
+  @ApiOperation(GetOperationId(Track.modelName, 'SearchByArtist'))
   searchTrackByArtist(
     @Query('track') track: string,
     @Query('page_size') page_size: string,
@@ -42,4 +42,11 @@ export class TrackController {
     return this._trackService.apiSearchByArtist(track, page_size, page);
   }
 
+  @Get(':track_id')
+  @ApiOkResponse()
+  @ApiBadRequestResponse({type: ApiException})
+  @ApiOperation(GetOperationId(Track.modelName, 'Get'))
+  getTrackById(@Param('track_id') track_id: string,) : Observable<any>{
+    return this._trackService.getTrackLyrics(track_id);
+  }
 }
