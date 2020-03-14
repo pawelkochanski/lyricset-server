@@ -1,9 +1,8 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import {HttpService, Injectable } from '@nestjs/common';
 import { BaseService } from '../shared/base.service';
 import { Track } from './models/track.model';
 import { Configuration } from '../shared/configuration/configuration/configuration.enum';
-import { map } from 'rxjs/operators';
-import { forkJoin, Observable } from 'rxjs';
+
 
 @Injectable()
 export class TrackService extends BaseService<Track> {
@@ -22,10 +21,7 @@ export class TrackService extends BaseService<Track> {
           page_size: page_size,
           page: page,
         },
-      })
-      .pipe(
-        map(response => response.data.message.body),
-      );
+      });
   }
 
   apiSearchByArtist(artist: string, page_size: string, page: string) {
@@ -39,10 +35,7 @@ export class TrackService extends BaseService<Track> {
           page_size: page_size,
           page: page,
         },
-      })
-      .pipe(
-        map(response => response.data.message.body),
-      );
+      });
   }
 
   getTrackLyrics(track_id: string){
@@ -52,9 +45,17 @@ export class TrackService extends BaseService<Track> {
           apikey: Configuration.API_KEY,
           track_id: track_id
         }
-      }).pipe(
-      map(response => response.data.message.body),
-    );
+      });
+  }
+
+  getTrack(track_id: string){
+    return this.httpService.get(Configuration.API_URL + 'track.get',
+      {
+        params: {
+          apikey: Configuration.API_KEY,
+          track_id: track_id
+        }
+      });
   }
 
 
