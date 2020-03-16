@@ -1,5 +1,6 @@
 import { BaseModel, schemaOptions } from './../../shared/base.model';
 import { prop, ModelType } from 'typegoose';
+import { Track } from '../../track/models/track.model';
 export class Lyricset extends BaseModel<Lyricset>{
     @prop({required: [true, 'Name is required']})
     name: string;
@@ -8,7 +9,7 @@ export class Lyricset extends BaseModel<Lyricset>{
     @prop({default: ''})
     imageId: string;
     @prop({default: []})
-    tracklist: string[];
+    tracklist: Track[];
 
     static get model(): ModelType<Lyricset>{
         return new Lyricset().getModelForClass(Lyricset, {schemaOptions});

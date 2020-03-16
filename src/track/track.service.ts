@@ -31,7 +31,7 @@ export class TrackService extends BaseService<Track> {
           apikey: Configuration.API_KEY,
           s_track_rating: 'desc',
           q_artist: artist,
-          f_has_lyrics: 1,
+          f_has_lyrics: true,
           page_size: page_size,
           page: page,
         },

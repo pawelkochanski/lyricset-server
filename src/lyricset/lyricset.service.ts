@@ -32,7 +32,7 @@ export class LyricsetService extends BaseService<Lyricset> {
     }
 
     async setImageSet(imageId: string, setId: string): Promise<void>{
-        let exists;
+        let exists: Lyricset;
         try{
             exists = await this.fidnById(setId);
         }catch (e) {

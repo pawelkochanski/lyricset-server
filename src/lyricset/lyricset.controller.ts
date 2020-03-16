@@ -4,7 +4,19 @@ import { User } from '../user/models/user.model';
 
 import { UserRole } from '../user/models/user-role.enum';
 import { LyricsetService } from './lyricset.service';
-import { Controller, Post, HttpStatus, Body, HttpException, Get, Param, Put, Delete, UseGuards } from '@nestjs/common';
+import {
+    Controller,
+    Post,
+    HttpStatus,
+    Body,
+    HttpException,
+    Get,
+    Param,
+    Put,
+    Delete,
+    UseGuards,
+    ValidationPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse, ApiOkResponse } from '@nestjs/swagger';
 import { Lyricset } from './models/lyricset.model';
 import { GetOperationId } from 'src/shared/utilities/get-operation-id';
@@ -15,6 +27,7 @@ import { Roles } from 'src/shared/decorators/roles.decorator';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
 import {User as UserDecorator}  from 'src/shared/decorators/user.decorator' ;
+import { Track } from '../track/models/track.model';
 
 @Controller('lyricsets')
 @ApiBearerAuth()
@@ -81,20 +94,21 @@ export class LyricsetController {
         }
     }
 
+
     @Put(':id')
     @UseGuards(AuthGuard('jwt'),RolesGuard)
     @Roles(UserRole.User)
     @ApiOkResponse()
     @ApiBadRequestResponse({type: ApiException})
     @ApiOperation(GetOperationId(Lyricset.modelName, 'Update'))
-    async update(@Param('id') id: string, @Body() vm: LyricsetUpdateVm, @UserDecorator() user: User){
+    async update(@Param('id') id: string, @Body(new ValidationPipe()) vm: LyricsetUpdateVm, @UserDecorator() user: User){
         const{name, description, tracklist} = vm;
 
         if(!vm){
             throw new HttpException('Missing parameters', HttpStatus.BAD_REQUEST);
         }
 
-        const exist = await this._lyricsetService.fidnById(id);
+        const exist: Lyricset = await this._lyricsetService.fidnById(id);
 
         if(!exist){
             throw new HttpException(`${id} Not found`, HttpStatus.BAD_REQUEST);
@@ -105,8 +119,9 @@ export class LyricsetController {
         }
 
         exist.name = name;
-        exist.description = description
+        exist.description = description;
         exist.tracklist = tracklist;
+        console.log(exist);
 
         try{
             const updated = await this._lyricsetService.update(id,exist);

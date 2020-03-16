@@ -12,15 +12,15 @@ import { GetOperationId } from '../shared/utilities/get-operation-id';
 import { Track } from './models/track.model';
 import { Observable } from 'rxjs';
 import { ApiInterceptor } from '../shared/interceptors/api.interceptor';
+import { TrackInterceptor } from '../shared/interceptors/track.interceptor';
 
 @ApiBearerAuth()
 @ApiTags(Track.modelName)
-@UseInterceptors(new ApiInterceptor())
 @Controller('track')
 export class TrackController {
   constructor(private readonly _trackService: TrackService) {
   }
-
+  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
   @Get('search/title')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
@@ -32,6 +32,7 @@ export class TrackController {
     return this._trackService.apiSearchByTitle(track, page_size, page);
   }
 
+  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
   @Get('search/artist')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
@@ -43,6 +44,7 @@ export class TrackController {
     return this._trackService.apiSearchByArtist(track, page_size, page);
   }
 
+  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
   @Get('/lyrics/:track_id')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
@@ -51,6 +53,7 @@ export class TrackController {
     return this._trackService.getTrackLyrics(track_id);
   }
 
+  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
   @Get('/:track_id')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
