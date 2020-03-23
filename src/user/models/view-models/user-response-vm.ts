@@ -6,11 +6,7 @@ import {
 } from '@nestjs/swagger/dist/decorators/api-model-property.decorator';
 import { EnumToArray } from '../../../shared/utilities/enum-to-array';
 
-export class UserVm extends BaseModelVm{
-  @ApiModelProperty()
-  username: string;
-  @ApiModelProperty()
-  email: string;
+export class UserResponseVm{
   @ApiModelPropertyOptional({enum: EnumToArray(UserRole)})
   role?: UserRole;
   @ApiModelProperty()
@@ -21,6 +17,4 @@ export class UserVm extends BaseModelVm{
   url: string;
   @ApiModelProperty()
   avatarId: string;
-  @ApiModelProperty()
-  bands: string[];
 }

@@ -10,6 +10,8 @@ import { UserModule } from './user/user.module';
 import { LyricsetModule } from './lyricset/lyricset.module';
 import { ImageModule } from './image/image.module';
 import { TrackModule } from './track/track.module';
+import { BandsModule } from './bands/bands.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { TrackModule } from './track/track.module';
     LyricsetModule,
     MulterModule.register({dest:'./files'}),
     ImageModule,
-    TrackModule
+    TrackModule,
+    BandsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

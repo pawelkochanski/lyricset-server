@@ -15,7 +15,7 @@ import {
   Put,
   Delete,
   UseGuards,
-  ValidationPipe,
+  ValidationPipe, Inject, forwardRef, Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -34,7 +34,7 @@ import { LyricSetParams } from './models/view-models/lyricset.params.model';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { User as UserDecorator } from 'src/shared/decorators/user.decorator' ;
+import { UserDecorator } from 'src/shared/decorators/user.decorator' ;
 import { Track } from '../track/models/track.model';
 
 @Controller('lyricsets')
@@ -50,13 +50,14 @@ export class LyricsetController {
   @Roles(UserRole.User)
   @ApiCreatedResponse({ type: LyricsetVm })
   @ApiBadRequestResponse({ type: ApiException })
-  @ApiOperation(GetOperationId(Lyricset.modelName, 'Create'))
-  async create(@Body() params: LyricSetParams, @UserDecorator() user: User): Promise<LyricsetVm> {
+  @ApiOperation({ summary: 'CreateLyricset' })
+  async create(@Body() params: LyricSetParams, @UserDecorator() user: User, @Req() req): Promise<LyricsetVm> {
+    console.log(req.user);
     const name = params.name;
     if (!name) {
       throw new HttpException('Name is required', HttpStatus.BAD_REQUEST);
     }
-
+    console.log(params);
     try {
       const newLyricset = await this._lyricsetService.createLyricset(params);
       user.setlist.push(newLyricset.id);
@@ -66,7 +67,7 @@ export class LyricsetController {
         await this._lyricsetService.delete(newLyricset.id);
         throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      return this._lyricsetService.map<LyricsetVm>(newLyricset);
+      return await this._lyricsetService.map<LyricsetVm>(newLyricset);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -77,8 +78,9 @@ export class LyricsetController {
   @Roles(UserRole.User)
   @ApiResponse({ status: HttpStatus.OK, type: LyricsetVm, isArray: true })
   @ApiBadRequestResponse({ type: ApiException })
-  @ApiOperation(GetOperationId(Lyricset.modelName, 'GetAll'))
+  @ApiOperation({ summary: 'GetSetsOfUser' })
   async getAll(@UserDecorator() user: User): Promise<LyricsetVm[]> {
+    console.log(user);
     const returnSets: LyricsetVm[] = [];
     for (const setid of user.setlist) {
       try {
@@ -93,14 +95,21 @@ export class LyricsetController {
   @Get(':id')
   @ApiResponse({ status: HttpStatus.OK, type: LyricsetVm })
   @ApiBadRequestResponse({ type: ApiException })
-  @ApiOperation(GetOperationId(Lyricset.modelName, 'Get'))
-  async getById(@Param('id') id: string): Promise<LyricsetVm> {
+  @ApiOperation({ summary: 'GetSetsById' })
+  async getById(@Param('id') id: string, @UserDecorator() user: User): Promise<LyricsetVm> {
+    let lyricset;
     try {
-      const lyricset = await this._lyricsetService.fidnById(id);
-      return this._lyricsetService.map<LyricsetVm>(lyricset.toJSON());
+      lyricset = await this._lyricsetService.fidnById(id);
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    if(!lyricset){
+      throw new HttpException('set doesnt exist', HttpStatus.NOT_FOUND);
+    }
+    if(lyricset.isPrivate && (!user || !user.setlist.includes(id))){
+      throw new HttpException('not your set', HttpStatus.UNAUTHORIZED);
+    }
+    return this._lyricsetService.map<LyricsetVm>(lyricset.toJSON());
   }
 
 
@@ -109,9 +118,9 @@ export class LyricsetController {
   @Roles(UserRole.User)
   @ApiOkResponse()
   @ApiBadRequestResponse({ type: ApiException })
-  @ApiOperation(GetOperationId(Lyricset.modelName, 'Update'))
+  @ApiOperation({ summary: 'UpdateSet' })
   async update(@Param('id') id: string, @Body(new ValidationPipe()) vm: LyricsetUpdateVm, @UserDecorator() user: User) {
-    const { name, description, tracklist } = vm;
+    const { name, description, tracklist, isPrivate } = vm;
 
     if (!vm) {
       throw new HttpException('Missing parameters', HttpStatus.BAD_REQUEST);
@@ -129,14 +138,16 @@ export class LyricsetController {
 
     tracklist.find(trackItem => {
 
-      if (tracklist.find(duplicate => trackItem.track_id === duplicate.track_id)) {
+      if (tracklist.find(duplicate => trackItem.track_id === duplicate.track_id && duplicate !== trackItem)) {
         throw new HttpException('track exists', HttpStatus.BAD_REQUEST);
       }
     });
+    console.log(exist);
 
     exist.name = name;
     exist.description = description;
     exist.tracklist = tracklist;
+    exist.isPrivate = isPrivate === 'true';
     console.log(exist);
 
     try {
@@ -148,30 +159,17 @@ export class LyricsetController {
   }
 
 
+
   @Delete(':id')
   @Roles(UserRole.Admin, UserRole.User)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOkResponse({ type: LyricsetVm })
   @ApiBadRequestResponse({ type: ApiException })
-  @ApiOperation(GetOperationId(Lyricset.modelName, 'Delete'))
-  async delete(@Param('id')id: string): Promise<LyricsetVm> {
-    try {
-      const deleted = await this._lyricsetService.delete(id);
-      return this._lyricsetService.map<LyricsetVm>(deleted.toJSON());
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-  }
-
-
-  @Delete('user/:id')
-  @Roles(UserRole.Admin, UserRole.User)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @ApiOkResponse({ type: LyricsetVm })
-  @ApiBadRequestResponse({ type: ApiException })
-  @ApiOperation(GetOperationId(Lyricset.modelName, 'DeleteFromUser'))
+  @ApiOperation({ summary: 'DeleteSetFromUser' })
   async deleteUsersset(@Param('id')id: string, @UserDecorator() user: User): Promise<void> {
+    if(!user.setlist.includes(id)){
+      throw new HttpException('Permission denied.', HttpStatus.UNAUTHORIZED);
+    }
     const length = user.setlist.length;
     try {
       const deleted = this._lyricsetService.delete(id);

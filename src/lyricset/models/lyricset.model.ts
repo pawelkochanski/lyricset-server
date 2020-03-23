@@ -10,6 +10,8 @@ export class Lyricset extends BaseModel<Lyricset>{
     imageId: string;
     @prop({default: []})
     tracklist: Track[];
+    @prop({default: false})
+    isPrivate: boolean;
 
     static get model(): ModelType<Lyricset>{
         return new Lyricset().getModelForClass(Lyricset, {schemaOptions});

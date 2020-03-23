@@ -1,30 +1,31 @@
-import { User as UserDecorator } from './../shared/decorators/user.decorator';
+import { UserDecorator } from '../shared/decorators/user.decorator';
 import { diskStorage } from 'multer';
 import {
   Controller,
-  Post,
-  UseInterceptors,
-  UseGuards,
-  UploadedFile,
-  Get,
-  Param,
-  Res,
   Delete,
+  Get,
   HttpException,
   HttpStatus,
-  Req, Query,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFileFilter } from 'src/shared/middlewares/image-filter';
 import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiConsumes,
-  ApiBody,
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiOkResponse,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
@@ -35,12 +36,20 @@ import { ApiException } from 'src/shared/api-exception.model';
 import { UserService } from 'src/user/user.service';
 import * as fs from 'fs';
 import { LyricsetService } from '../lyricset/lyricset.service';
+import { BandsService } from '../bands/bands.service';
+import { Band } from '../bands/models/band.model';
+import { Member } from '../bands/models/member.model';
+import { MemberRoles } from '../bands/models/member-roles.enum';
+import { User } from '../user/models/user.model';
+import { Lyricset } from '../lyricset/models/lyricset.model';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
 @Controller('images')
 @ApiTags('Avatar')
 export class ImageController {
   constructor(private readonly _userService: UserService,
-              private readonly _lyricsetService: LyricsetService) {
+              private readonly _lyricsetService: LyricsetService,
+              private readonly _bandsService: BandsService) {
   }
 
   @Post('avatar')
@@ -101,6 +110,54 @@ export class ImageController {
     return { imageId: newPath};
   }
 
+  @Post('band/:id')
+  @UseInterceptors(FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './images',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    },
+  ))
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.User)
+  @ApiCreatedResponse()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'setImage',
+    type: Image,
+  })
+  @ApiBadRequestResponse({ type: ApiException })
+  @ApiOperation({ summary: 'PostBandImage' })
+  async postBandImage(@UploadedFile() file, @UserDecorator() user, @Param('id')id: string): Promise<{ imageId: string }> {
+    console.log(file);
+    const newPath = file.path.replace(/images\\/g, '');
+    let band: Band, member: Member;
+    try {
+      band = await this._bandsService.fidnById(id);
+    } catch(e){
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if(!band){
+      throw new HttpException('band doesnt exist', HttpStatus.BAD_REQUEST);
+    }
+    try{
+      member = await band.members.find(member => member.userId === user.id);
+    }catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if(!member){
+      throw new HttpException('you are not a member', HttpStatus.BAD_REQUEST);
+    }
+    if(member.role !== MemberRoles.Leader){
+      throw new HttpException('you are not a leader', HttpStatus.BAD_REQUEST);
+    }
+
+    await this._bandsService.setImageBand(`${newPath}`, id);
+    return { imageId: newPath};
+  }
+
   @Get(':id')
   @ApiOkResponse()
   @ApiBadRequestResponse({ type: ApiException })
@@ -116,11 +173,26 @@ export class ImageController {
   @ApiOkResponse()
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'RemoveAvatar' })
-  async removeAvatar(@Param('id')fileId: string, @UserDecorator() user, @Req() req, @Query('setId')setid :string): Promise<void> {
+  @ApiImplicitQuery({
+    name: 'setId',
+    required: false,
+    type: String
+  })
+  @ApiImplicitQuery({
+    name: 'bandId',
+    required: false,
+    type: String
+  })
+  async removeAvatar(
+    @Param('id')fileId: string,
+    @UserDecorator() user: User,
+    @Req() req,
+    @Query('setId')setid :string,
+    @Query('bandId')bandid: string): Promise<void> {
     console.log(setid);
     let todelete = false;
     if(setid && user.setlist.includes(setid)){
-      let exists;
+      let exists: Lyricset;
       try {
         exists = await this._lyricsetService.fidnById(setid);
       } catch (e) {
@@ -134,7 +206,31 @@ export class ImageController {
       }
       todelete = true;
     }
-    if (user.avatarId === fileId) {
+    else if(bandid && user.bands.includes(bandid)) {
+      console.log(user);
+      let exists: Band;
+      try {
+        exists = await this._bandsService.fidnById(bandid);
+      } catch (e) {
+        throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      console.log(exists);
+      let member = exists.members.find(member => member.userId === user.id);
+      if(!member){
+        throw new HttpException('you are not a member', HttpStatus.BAD_REQUEST);
+      }
+      if(member.role!==MemberRoles.Leader){
+        throw new HttpException('you are not a leader', HttpStatus.BAD_REQUEST);
+      }
+      exists.imageId = null;
+      try{
+        await this._bandsService.update(bandid, exists);
+      }catch (e) {
+        throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      todelete = true;
+    }
+    else if (user.avatarId === fileId) {
       user.avatarId = null;
       todelete = true;
       try{

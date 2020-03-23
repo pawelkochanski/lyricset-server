@@ -21,6 +21,8 @@ export class User extends BaseModel<User>{
   url: string;
   @prop({default:''})
   avatarId: string;
+  @prop({default: []})
+  bands: string[];
 
 
 

@@ -24,7 +24,7 @@ export class TrackController {
   @Get('search/title')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(Track.modelName, 'SearchByTitle'))
+  @ApiOperation({ summary: 'SearchTrackByTitle' })
   searchTrackByTitle(
     @Query('track') track: string,
     @Query('page_size') page_size: string,
@@ -36,7 +36,7 @@ export class TrackController {
   @Get('search/artist')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(Track.modelName, 'SearchByArtist'))
+  @ApiOperation({ summary: 'SearchTrackByArtist' })
   searchTrackByArtist(
     @Query('track') track: string,
     @Query('page_size') page_size: string,
@@ -48,7 +48,7 @@ export class TrackController {
   @Get('/lyrics/:track_id')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(Track.modelName, 'GetLyrics'))
+  @ApiOperation({ summary: 'GetTrackLyricsById' })
   getTrackById(@Param('track_id') track_id: string,) : Observable<any>{
     return this._trackService.getTrackLyrics(track_id);
   }
@@ -57,7 +57,7 @@ export class TrackController {
   @Get('/:track_id')
   @ApiOkResponse()
   @ApiBadRequestResponse({type: ApiException})
-  @ApiOperation(GetOperationId(Track.modelName, 'Get'))
+  @ApiOperation({ summary: 'GetTrackById' })
   getTrack(@Param('track_id') track_id: string,) : Observable<any>{
     return this._trackService.getTrack(track_id);
   }
