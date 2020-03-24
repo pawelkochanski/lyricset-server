@@ -67,7 +67,7 @@ export class BandsController {
       const newBand = await this._bandsService.createBand(params, user);
       bandVm = await this._bandsService.map<BandVm>(newBand);
     } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException('band exists', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
