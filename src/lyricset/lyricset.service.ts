@@ -22,6 +22,7 @@ export class LyricsetService extends BaseService<Lyricset> {
     const newLyricset = new this._model();
     newLyricset.name = name;
     newLyricset.isPrivate = isPrivate !== '';
+    newLyricset.rating = 0;
 
     try {
       const result = await this.create(newLyricset);

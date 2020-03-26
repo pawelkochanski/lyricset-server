@@ -13,21 +13,26 @@ export class AuthService {
   private readonly jwtKey: string;
 
   constructor(@Inject(forwardRef(() => UserService)) readonly _userService: UserService,
-              private readonly _configurationService: ConfigurationService){
-    this.jwtOptions = {expiresIn: '12h'};
+              private readonly _configurationService: ConfigurationService) {
+    this.jwtOptions = { expiresIn: '12h' };
     this.jwtKey = _configurationService.get(Configuration.JWT_KEY);
   }
 
 
-  async singPayload(payload: JwtPayload): Promise<string>{
-    return sign(payload,this.jwtKey,this.jwtOptions);
+  async singPayload(payload: JwtPayload): Promise<string> {
+    return sign(payload, this.jwtKey, this.jwtOptions);
   }
 
-  verify(token: string){
-    return verify(token, this.jwtKey);
+  verify(token: string): JwtPayload {
+    return verify(token, this.jwtKey) as JwtPayload;
   }
 
-  async validatePayload(payload: JwtPayload): Promise<InstanceType<User>>{
-    return this._userService.findOne({username: payload.username});
+  async validatePayload(payload: JwtPayload): Promise<InstanceType<User>> {
+    return this._userService.findOne({ username: payload.username });
+  }
+
+  async getUserFromToken(token: string) : Promise<InstanceType<User>> {
+    const payload = this.verify(token);
+    return this.validatePayload(payload);
   }
 }

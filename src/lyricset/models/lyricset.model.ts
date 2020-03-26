@@ -12,6 +12,10 @@ export class Lyricset extends BaseModel<Lyricset>{
     tracklist: Track[];
     @prop({default: false})
     isPrivate: boolean;
+    @prop({default: 0})
+    rating: number;
+    @prop({default: 0})
+    totalRating: number;
 
     static get model(): ModelType<Lyricset>{
         return new Lyricset().getModelForClass(Lyricset, {schemaOptions});

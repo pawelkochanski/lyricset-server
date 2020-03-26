@@ -14,5 +14,8 @@ export class LyricsetVm extends BaseModelVm{
     @ApiModelProperty()
     tracklist: Track[];
     @ApiModelProperty()
-    isPrivate: boolean
+    isPrivate: boolean;
+    @ApiModelProperty()
+    rating: number;
+
 }

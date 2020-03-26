@@ -50,12 +50,14 @@ export class MapperService {
       .forSourceMember('_id', opts => opts.ignore())
       .forSourceMember('__v', opts => opts.ignore())
       .forSourceMember('createdAt', opts => opts.ignore())
+      .forSourceMember('totalRating', opts => opts.ignore())
       .forSourceMember('updatedAt', opts => opts.ignore());
 
     config.createMap('Band', 'BandVm')
       .forSourceMember('_id', opts => opts.ignore())
       .forSourceMember('__v', opts => opts.ignore())
       .forSourceMember('createdAt', opts => opts.ignore())
+      .forSourceMember('messages', opts => opts.ignore())
       .forSourceMember('setlist', opts => opts.ignore())
       .forSourceMember('updatedAt', opts => opts.ignore());
 
@@ -63,6 +65,7 @@ export class MapperService {
       .forSourceMember('_id', opts => opts.ignore())
       .forSourceMember('__v', opts => opts.ignore())
       .forSourceMember('createdAt', opts => opts.ignore())
+      .forSourceMember('messages', opts => opts.ignore())
       .forSourceMember('updatedAt', opts => opts.ignore());
   }
 

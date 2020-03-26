@@ -15,7 +15,7 @@ import {
   Put,
   Delete,
   UseGuards,
-  ValidationPipe, Inject, forwardRef, Req,
+  ValidationPipe, Inject, forwardRef, Req, Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -103,13 +103,33 @@ export class LyricsetController {
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    if(!lyricset){
+    if (!lyricset) {
       throw new HttpException('set doesnt exist', HttpStatus.NOT_FOUND);
     }
-    if(lyricset.isPrivate && (!user || !user.setlist.includes(id))){
+    if (lyricset.isPrivate && (!user || !user.setlist.includes(id))) {
       throw new HttpException('not your set', HttpStatus.UNAUTHORIZED);
     }
     return this._lyricsetService.map<LyricsetVm>(lyricset.toJSON());
+  }
+
+  @Get('top/:count')
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiBadRequestResponse({ type: ApiException })
+  @ApiOperation({ summary: 'GetTopSets' })
+  async getTop(@Query('count') count: number): Promise<LyricsetVm[]> {
+    console.log(count);
+    const numcount = +count;
+    console.log(numcount);
+    let sets = await this._lyricsetService.findAll();
+    sets = sets.sort((a, b) => {
+      return b.rating - a.rating;
+    });
+    sets.splice(count);
+    const returnSets: LyricsetVm[] = [];
+    for (let set of sets) {
+      returnSets.push(await this._lyricsetService.map<LyricsetVm>(set.toJSON()));
+    }
+    return returnSets;
   }
 
 
@@ -158,6 +178,34 @@ export class LyricsetController {
 
   }
 
+  @Put(':id/rate')
+  @Roles(UserRole.Admin, UserRole.User)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiOkResponse({ type: LyricsetVm })
+  @ApiBadRequestResponse({ type: ApiException })
+  @ApiOperation({ summary: 'RateSet' })
+  async rateSet(@Param('id')id: string,
+                @UserDecorator() user: User,
+                @Query('rate') rate: number): Promise<LyricsetVm> {
+    if (rate < 1 || rate > 5) {
+      throw new HttpException('wrong rate', HttpStatus.BAD_REQUEST);
+    }
+    const lyricSet = await this._lyricsetService.fidnById(id);
+    if (lyricSet.rating === 0) {
+      lyricSet.rating = rate;
+    }
+    const numrate = +rate;
+    lyricSet.rating = ((lyricSet.rating * lyricSet.totalRating) + numrate);
+    lyricSet.totalRating += 1;
+    lyricSet.rating = lyricSet.rating / lyricSet.totalRating;
+    try {
+      await this._lyricsetService.update(lyricSet.id, lyricSet);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return await this._lyricsetService.map<LyricsetVm>(lyricSet.toJSON());
+  }
 
 
   @Delete(':id')
@@ -167,7 +215,7 @@ export class LyricsetController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'DeleteSetFromUser' })
   async deleteUsersset(@Param('id')id: string, @UserDecorator() user: User): Promise<void> {
-    if(!user.setlist.includes(id)){
+    if (!user.setlist.includes(id)) {
       throw new HttpException('Permission denied.', HttpStatus.UNAUTHORIZED);
     }
     const length = user.setlist.length;
