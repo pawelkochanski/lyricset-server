@@ -44,6 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     };
     const band = await this._bandsService.fidnById(message.toChannel);
     band.messages.push(sendMessage);
+    band.messages.splice(100);
     await this._bandsService.update(message.toChannel, band);
     client.broadcast.to(message.toChannel).emit('chat', sendMessage);
   }
@@ -64,6 +65,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     };
     const band = await this._bandsService.fidnById(message.toChannel);
     band.messages.push(sendMessage);
+    band.messages.splice(100);
     await this._bandsService.update(message.toChannel, band);
     client.join(message.toChannel);
     client.broadcast.to(message.toChannel).emit('users', sendMessage);
