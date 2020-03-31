@@ -16,6 +16,8 @@ export class Lyricset extends BaseModel<Lyricset>{
     rating: number;
     @prop({default: 0})
     totalRating: number;
+    @prop()
+    ownerId: string;
 
     static get model(): ModelType<Lyricset>{
         return new Lyricset().getModelForClass(Lyricset, {schemaOptions});

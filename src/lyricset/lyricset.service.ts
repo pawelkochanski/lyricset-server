@@ -5,6 +5,7 @@ import { ModelType } from 'typegoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { MapperService } from 'src/shared/mapper/mapper.service';
 import { LyricSetParams } from './models/view-models/lyricset.params.model';
+import { User } from '../user/models/user.model';
 
 @Injectable()
 export class LyricsetService extends BaseService<Lyricset> {
@@ -16,13 +17,14 @@ export class LyricsetService extends BaseService<Lyricset> {
     this._mapper = _mapperService.mapper;
   }
 
-  async createLyricset(params: LyricSetParams): Promise<Lyricset> {
+  async createLyricset(params: LyricSetParams, user: User): Promise<Lyricset> {
     const { name, isPrivate } = params;
 
     const newLyricset = new this._model();
     newLyricset.name = name;
     newLyricset.isPrivate = isPrivate !== '';
     newLyricset.rating = 0;
+    newLyricset.ownerId = user.id;
 
     try {
       const result = await this.create(newLyricset);

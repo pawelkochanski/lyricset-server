@@ -24,6 +24,19 @@ export class TrackService extends BaseService<Track> {
       });
   }
 
+  top10(count: string){
+    return this.httpService.get(Configuration.API_URL + 'chart.tracks.get',
+      {
+        params: {
+          apikey: Configuration.API_KEY,
+          chart_name: 'mxmweekly',
+          country: 'XW',
+          page_size: count,
+          f_has_lyrics: '1'
+        },
+      });
+  }
+
   apiSearchByArtist(artist: string, page_size: string, page: string) {
     return this.httpService.get(Configuration.API_URL + 'track.search',
       {
@@ -36,6 +49,10 @@ export class TrackService extends BaseService<Track> {
           page: page,
         },
       });
+  }
+
+  apiSearchByQuery(query: string, page_size: string, page: string){
+
   }
 
   getTrackLyrics(track_id: string){

@@ -59,7 +59,7 @@ export class LyricsetController {
     }
     console.log(params);
     try {
-      const newLyricset = await this._lyricsetService.createLyricset(params);
+      const newLyricset = await this._lyricsetService.createLyricset(params, user);
       user.setlist.push(newLyricset.id);
       try {
         await this._userService.update(user.id, user);
@@ -116,11 +116,11 @@ export class LyricsetController {
   @ApiResponse({ status: HttpStatus.OK })
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetTopSets' })
-  async getTop(@Query('count') count: number): Promise<LyricsetVm[]> {
+  async getTop(@Param('count') count: number): Promise<LyricsetVm[]> {
     console.log(count);
     const numcount = +count;
     console.log(numcount);
-    let sets = await this._lyricsetService.findAll();
+    let sets = await this._lyricsetService.findAll({isPrivate: false});
     sets = sets.sort((a, b) => {
       return b.rating - a.rating;
     });
