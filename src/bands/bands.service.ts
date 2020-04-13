@@ -6,7 +6,6 @@ import { Member } from './models/member.model';
 import { MemberRoles } from './models/member-roles.enum';
 import { BandParamsVm } from './models/view-models/band-params-vm';
 import { InjectModel } from '@nestjs/mongoose';
-import { Lyricset } from '../lyricset/models/lyricset.model';
 import { ModelType } from 'typegoose';
 import { MapperService } from '../shared/mapper/mapper.service';
 
