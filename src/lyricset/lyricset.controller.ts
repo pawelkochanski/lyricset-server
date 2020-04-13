@@ -211,10 +211,10 @@ export class LyricsetController {
   @Delete(':id')
   @Roles(UserRole.Admin, UserRole.User)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @ApiOkResponse({ type: LyricsetVm })
+  @ApiOkResponse({ type: LyricsetVm , isArray: true })
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'DeleteSetFromUser' })
-  async deleteUsersset(@Param('id')id: string, @UserDecorator() user: User): Promise<void> {
+  async deleteUsersset(@Param('id')id: string, @UserDecorator() user: User): Promise<LyricsetVm[]> {
     if (!user.setlist.includes(id)) {
       throw new HttpException('Permission denied.', HttpStatus.UNAUTHORIZED);
     }
@@ -229,9 +229,11 @@ export class LyricsetController {
       throw new HttpException('set doesnt exist', HttpStatus.BAD_REQUEST);
     }
     try {
-      this._userService.update(user.id, user);
+       await this._userService.update(user.id, user);
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
+
+    return this.getAll(user);
   }
 }
