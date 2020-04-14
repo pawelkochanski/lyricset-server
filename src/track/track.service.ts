@@ -51,10 +51,6 @@ export class TrackService extends BaseService<Track> {
       });
   }
 
-  apiSearchByQuery(query: string, page_size: string, page: string){
-
-  }
-
   getTrackLyrics(track_id: string){
     return this.httpService.get(Configuration.API_URL + 'track.lyrics.get',
       {

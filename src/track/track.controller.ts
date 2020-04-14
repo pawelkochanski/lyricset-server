@@ -19,54 +19,55 @@ import { TrackInterceptor } from '../shared/interceptors/track.interceptor';
 export class TrackController {
   constructor(private readonly _trackService: TrackService) {
   }
-  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
+
+  @UseInterceptors(new TrackInterceptor(), new ApiInterceptor())
   @Get('search/title')
   @ApiOkResponse()
-  @ApiBadRequestResponse({type: ApiException})
+  @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'SearchTrackByTitle' })
   async searchTrackByTitle(
     @Query('track') track: string,
     @Query('page_size') page_size: string,
-    @Query('page') page: string){
+    @Query('page') page: string) {
     return this._trackService.apiSearchByTitle(track, page_size, page);
   }
 
-  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
+  @UseInterceptors(new TrackInterceptor(), new ApiInterceptor())
   @Get('search/artist')
   @ApiOkResponse()
-  @ApiBadRequestResponse({type: ApiException})
+  @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'SearchTrackByArtist' })
   async searchTrackByArtist(
     @Query('track') track: string,
     @Query('page_size') page_size: string,
-    @Query('page') page: string){
-    console.log('aaaa');
+    @Query('page') page: string) {
     return this._trackService.apiSearchByArtist(track, page_size, page);
   }
 
-  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
+  @UseInterceptors(new TrackInterceptor(), new ApiInterceptor())
   @Get('lyrics/:track_id')
   @ApiOkResponse()
-  @ApiBadRequestResponse({type: ApiException})
+  @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetTrackLyricsById' })
-  async getTrackById(@Param('track_id') track_id: string,){
+  async getTrackById(@Param('track_id') track_id: string) {
     return this._trackService.getTrackLyrics(track_id);
   }
 
-  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
+  @UseInterceptors(new TrackInterceptor(), new ApiInterceptor())
   @Get(':track_id')
   @ApiOkResponse()
-  @ApiBadRequestResponse({type: ApiException})
+  @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetTrackById' })
-  async getTrack(@Param('track_id') track_id: string){
+  async getTrack(@Param('track_id') track_id: string) {
     return this._trackService.getTrack(track_id);
   }
-  @UseInterceptors(new TrackInterceptor(),new ApiInterceptor())
+
+  @UseInterceptors(new TrackInterceptor(), new ApiInterceptor())
   @Get('search/popular')
   @ApiOkResponse()
-  @ApiBadRequestResponse({type: ApiException})
+  @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetTop10Songs' })
-  async getPopular(@Query('count')count: string){
+  async getPopular(@Query('count')count: string) {
     return this._trackService.top10(count);
   }
 }

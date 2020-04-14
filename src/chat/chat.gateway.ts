@@ -20,13 +20,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   @WebSocketServer() server;
 
   async handleConnection(socket: Socket){
-
-
   }
 
   async handleDisconnect(socket: Socket){
-
-
   }
 
   @SubscribeMessage('chat')
@@ -34,6 +30,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this._authService.getUserFromToken(message.token);
     if(!user || !user.bands.includes(message.toChannel)){
       this.server.to(client.id).emit('chat',{content: 'You have no permissions to acces that chat.'});
+      return;
     }
     const sendMessage: SendMessage = {
       content: message.content,

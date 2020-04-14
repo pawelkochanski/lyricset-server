@@ -27,14 +27,13 @@ import { UserService } from './user.service';
 import { RegisterVm } from './models/view-models/register-vm.model';
 import { UserVm } from './models/view-models/user-vm.model';
 import { ApiException } from '../shared/api-exception.model';
-import { GetOperationId } from '../shared/utilities/get-operation-id';
 import { LoginResponseVm } from './models/view-models/login-response-vm';
 import { LoginVm } from './models/view-models/login-vm.model';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/shared/guards/roles.guard';
-import { Roles } from 'src/shared/decorators/roles.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
+import { Roles } from '../shared/decorators/roles.decorator';
 import { UserRole } from './models/user-role.enum';
-import { LyricsetVm } from 'src/lyricset/models/view-models/lyricset-vm.model';
+import { LyricsetVm } from '../lyricset/models/view-models/lyricset-vm.model';
 import { UserResponseVm } from './models/view-models/user-response-vm';
 import { LyricsetService } from '../lyricset/lyricset.service';
 
@@ -72,7 +71,7 @@ export class UserController {
     }
 
     try {
-      existEmail = await this._userService.findOne({ username });
+      existUsername = await this._userService.findOne({ username });
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -151,15 +150,12 @@ export class UserController {
     const { displayname, bio, url } = profileVm;
 
     if (displayname !== '') {
-      console.log(displayname);
       user.displayname = displayname;
     }
     if (bio !== '') {
-      console.log(bio);
       user.bio = bio;
     }
     if (url !== '') {
-      console.log(url);
       user.url = url;
     }
 
@@ -206,7 +202,6 @@ export class UserController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'searchUser' })
   async searchUser(@Query('user') userQuery: string): Promise<UserResponseVm[]> {
-    console.log(userQuery);
     const result = await this._userService.findAll();
     const returnValue = [] as UserResponseVm[];
     for (const user of result.filter(user => user.displayname.toLowerCase().includes(userQuery.toLowerCase()))) {
@@ -221,10 +216,8 @@ export class UserController {
   @ApiOkResponse({ type: UserResponseVm })
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetUser' })
-  async getUser(@Param('id') id: string): Promise<UserResponseVm> {
-    console.log(id);
+  async getUser(@Param('id') id: string): Promise<UserResponseVm> {;
     const exists = await this._userService.fidnById(id);
-    console.log(exists);
     return await this._userService.map<UserResponseVm>(exists.toJSON(), false, null, 'UserResponseVm');
   }
 
@@ -247,7 +240,6 @@ export class UserController {
       let set;
       try {
         set = await this._lyricsetService.fidnById(setid);
-        console.log(set);
       } catch (error) {
         throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
       }

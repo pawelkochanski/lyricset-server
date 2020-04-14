@@ -16,7 +16,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { editFileName, imageFileFilter } from 'src/shared/middlewares/image-filter';
+import { editFileName, imageFileFilter } from '../shared/middlewares/image-filter';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -28,12 +28,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/shared/guards/roles.guard';
-import { Roles } from 'src/shared/decorators/roles.decorator';
-import { UserRole } from 'src/user/models/user-role.enum';
+import { RolesGuard } from '../shared/guards/roles.guard';
+import { Roles } from '../shared/decorators/roles.decorator';
+import { UserRole } from '../user/models/user-role.enum';
 import { Image } from './models/image';
-import { ApiException } from 'src/shared/api-exception.model';
-import { UserService } from 'src/user/user.service';
+import { ApiException } from '../shared/api-exception.model';
+import { UserService } from '../user/user.service';
 import * as fs from 'fs';
 import { LyricsetService } from '../lyricset/lyricset.service';
 import { BandsService } from '../bands/bands.service';
@@ -73,10 +73,8 @@ export class ImageController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'PostAvatar' })
   async postAvatar(@UploadedFile() file, @UserDecorator() user): Promise<{ imageId: string }> {
-    console.log(file);
     const newPath = file.path.replace(/images\\/g, '');
     await this._userService.setAvatar(user, `${newPath}`);
-    console.log(user);
     return { imageId: user.avatarId };
   }
 
@@ -101,7 +99,6 @@ export class ImageController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'PostSetImage' })
   async postSetImage(@UploadedFile() file, @UserDecorator() user, @Param('id')id: string): Promise<{ imageId: string }> {
-    console.log(file);
     const newPath = file.path.replace(/images\\/g, '');
     if(!user.setlist.includes(id)){
       throw new HttpException('Set doesnt exist', HttpStatus.BAD_REQUEST);
@@ -131,7 +128,6 @@ export class ImageController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'PostBandImage' })
   async postBandImage(@UploadedFile() file, @UserDecorator() user, @Param('id')id: string): Promise<{ imageId: string }> {
-    console.log(file);
     const newPath = file.path.replace(/images\\/g, '');
     let band: Band, member: Member;
     try {
@@ -186,10 +182,8 @@ export class ImageController {
   async removeAvatar(
     @Param('id')fileId: string,
     @UserDecorator() user: User,
-    @Req() req,
     @Query('setId')setid :string,
     @Query('bandId')bandid: string): Promise<void> {
-    console.log(setid);
     let todelete = false;
     if(setid && user.setlist.includes(setid)){
       let exists: Lyricset;
@@ -207,14 +201,12 @@ export class ImageController {
       todelete = true;
     }
     else if(bandid && user.bands.includes(bandid)) {
-      console.log(user);
       let exists: Band;
       try {
         exists = await this._bandsService.fidnById(bandid);
       } catch (e) {
         throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      console.log(exists);
       let member = exists.members.find(member => member.userId === user.id);
       if(!member){
         throw new HttpException('you are not a member', HttpStatus.BAD_REQUEST);

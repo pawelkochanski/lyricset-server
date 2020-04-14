@@ -60,9 +60,6 @@ export class BandsService extends BaseService<Band> {
   }
 
   async verifyMember(bandid: string, user: User): Promise<{ band: Band, member: Member }> {
-    console.log(user);
-    console.log(bandid);
-    console.log(bandid==='5e76638a402a5d03dc4ef575');
     let band, member;
     if(!user.bands.includes(bandid)){
       throw new HttpException('not your band', HttpStatus.BAD_REQUEST);

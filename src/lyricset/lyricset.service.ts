@@ -1,9 +1,9 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Lyricset } from './models/lyricset.model';
-import { BaseService } from 'src/shared/base.service';
+import { BaseService } from '../shared/base.service'
 import { ModelType } from 'typegoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { MapperService } from 'src/shared/mapper/mapper.service';
+import { MapperService } from '../shared/mapper/mapper.service';
 import { LyricSetParams } from './models/view-models/lyricset.params.model';
 import { User } from '../user/models/user.model';
 

@@ -27,15 +27,13 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { Lyricset } from './models/lyricset.model';
-import { GetOperationId } from 'src/shared/utilities/get-operation-id';
 import { LyricsetVm } from './models/view-models/lyricset-vm.model';
-import { ApiException } from 'src/shared/api-exception.model';
+import { ApiException } from '../shared/api-exception.model';
 import { LyricSetParams } from './models/view-models/lyricset.params.model';
-import { Roles } from 'src/shared/decorators/roles.decorator';
-import { RolesGuard } from 'src/shared/guards/roles.guard';
+import { Roles } from '../shared/decorators/roles.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { UserDecorator } from 'src/shared/decorators/user.decorator' ;
-import { Track } from '../track/models/track.model';
+import { UserDecorator } from '../shared/decorators/user.decorator' ;
 
 @Controller('lyricsets')
 @ApiBearerAuth()
@@ -52,12 +50,10 @@ export class LyricsetController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'CreateLyricset' })
   async create(@Body() params: LyricSetParams, @UserDecorator() user: User, @Req() req): Promise<LyricsetVm> {
-    console.log(req.user);
     const name = params.name;
     if (!name) {
       throw new HttpException('Name is required', HttpStatus.BAD_REQUEST);
     }
-    console.log(params);
     try {
       const newLyricset = await this._lyricsetService.createLyricset(params, user);
       user.setlist.push(newLyricset.id);
@@ -80,7 +76,6 @@ export class LyricsetController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetSetsOfUser' })
   async getAll(@UserDecorator() user: User): Promise<LyricsetVm[]> {
-    console.log(user);
     const returnSets: LyricsetVm[] = [];
     for (const setid of user.setlist) {
       try {
@@ -117,9 +112,7 @@ export class LyricsetController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetTopSets' })
   async getTop(@Param('count') count: number): Promise<LyricsetVm[]> {
-    console.log(count);
     const numcount = +count;
-    console.log(numcount);
     let sets = await this._lyricsetService.findAll({isPrivate: false});
     sets = sets.sort((a, b) => {
       return b.rating - a.rating;
@@ -140,11 +133,11 @@ export class LyricsetController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'UpdateSet' })
   async update(@Param('id') id: string, @Body(new ValidationPipe()) vm: LyricsetUpdateVm, @UserDecorator() user: User) {
-    const { name, description, tracklist, isPrivate } = vm;
-
     if (!vm) {
       throw new HttpException('Missing parameters', HttpStatus.BAD_REQUEST);
     }
+
+    const { name, description, tracklist, isPrivate } = vm;
 
     const exist: Lyricset = await this._lyricsetService.fidnById(id);
 
@@ -162,13 +155,11 @@ export class LyricsetController {
         throw new HttpException('track exists', HttpStatus.BAD_REQUEST);
       }
     });
-    console.log(exist);
 
     exist.name = name;
     exist.description = description;
     exist.tracklist = tracklist;
     exist.isPrivate = isPrivate === 'true';
-    console.log(exist);
 
     try {
       const updated = await this._lyricsetService.update(id, exist);

@@ -56,8 +56,6 @@ export class BandsController {
   @ApiOperation({ summary: 'Create Band' })
   async create(@Body() params: BandParamsVm, @UserDecorator() user: User): Promise<BandVm> {
     const name = params.name;
-    console.log(user);
-    console.log(name);
     if (!name) {
       throw new HttpException('Name is required', HttpStatus.BAD_REQUEST);
     }
@@ -73,7 +71,6 @@ export class BandsController {
     try {
       user.bands.push(bandVm.id);
       await this._userService.update(user.id, user);
-      console.log(user);
     } catch (e) {
       await this._bandsService.delete(bandVm.id);
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -140,8 +137,10 @@ export class BandsController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetAllBandsFromUser' })
   async getAll(@UserDecorator() user: User): Promise<BandVm[]> {
-    console.log(user);
     const returnBands: BandVm[] = [];
+    if(!user){
+      throw new HttpException('no user', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     for (const bandId of user.bands) {
       try {
         const band = await this._bandsService.fidnById(bandId);
@@ -160,8 +159,6 @@ export class BandsController {
   @ApiBadRequestResponse({ type: ApiException })
   @ApiOperation({ summary: 'GetBandById' })
   async getBandById(@Param('bandid')bandid: string, @UserDecorator() user: User): Promise<BandVm> {
-    console.log(user);
-    console.log(bandid);
     const { band, member } = await this._bandsService.verifyMember(bandid, user);
     try {
       return await this._bandsService.map<BandVm>((band as any).toJSON());
